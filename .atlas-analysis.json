@@ -1,0 +1,93 @@
+{
+  "projectType": "infrastructure",
+  "projectName": "Reacher",
+  "projectDescription": "A self-hosted MCP server that gives Claude authenticated access to your machines, APIs, and persistent memory via SSH, Tailscale, and configurable HTTP proxying.",
+  "theme": "aspen",
+  "primaryColor": "#848c8e",
+  "lightColor": "#11161e",
+  "darkColor": "#cfd0d2",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "connecting-to-claude"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "configuration/environment-variables",
+              "configuration/reacher-config",
+              "configuration/domain-allowlist"
+            ]
+          },
+          {
+            "group": "Tools",
+            "pages": [
+              "tools/overview",
+              "tools/ssh-exec",
+              "tools/tailscale-status",
+              "tools/fetch-external",
+              "tools/github-search",
+              "tools/gist-kb",
+              "tools/browser"
+            ]
+          },
+          {
+            "group": "Deployment",
+            "pages": [
+              "deployment/docker",
+              "deployment/bare-node",
+              "deployment/easypanel",
+              "deployment/railway-render"
+            ]
+          },
+          {
+            "group": "Operations",
+            "pages": [
+              "operations/safety",
+              "operations/audit-log",
+              "operations/dry-run",
+              "operations/troubleshooting"
+            ]
+          },
+          {
+            "group": "Extending",
+            "pages": [
+              "extending/adding-tools",
+              "extending/token-injection"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "SSH execution on any Tailscale-enrolled device via ssh_exec",
+    "Authenticated HTTP proxy with per-domain token injection via fetch_external",
+    "Persistent AI memory backed by GitHub Gists via gist_kb",
+    "Tailscale device discovery and status via tailscale_status",
+    "Headless browser automation via CDP with the browser tool",
+    "GitHub PR and commit search via github_search",
+    "SSH command blocklist and directory allowlist for safety boundaries",
+    "Full audit log of every tool call with sensitive key stripping",
+    "Dry-run mode for ssh_exec to test without side effects",
+    "Stateless MCP transport — new handler per request, no session state"
+  ],
+  "publicApiSurface": [
+    "POST /mcp?token=MCP_SECRET — MCP protocol endpoint",
+    "GET /health — Health check endpoint (no auth)",
+    "ssh_exec — Run shell commands on Tailscale devices",
+    "tailscale_status — List all Tailscale devices with status and IPs",
+    "fetch_external — Proxy HTTP requests with injected auth per domain",
+    "github_search — Search GitHub PRs and commits",
+    "gist_kb — Read/write persistent knowledge base backed by GitHub Gists",
+    "browser — Control headless browser via CDP"
+  ]
+}
