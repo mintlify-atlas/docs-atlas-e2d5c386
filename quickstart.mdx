@@ -1,80 +1,248 @@
 ---
 title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+description: "Get Reacher running in under 10 minutes with Docker or bare Node."
 ---
 
-## Get started in three steps
+## Prerequisites
 
-Get your documentation site running locally and make your first customization.
+Before you start, make sure you have:
 
-### Step 1: Set up your local environment
+- A [Tailscale](https://tailscale.com) account with your devices enrolled in a mesh network
+- A VPS or always-on machine to host the server (must be reachable from Claude.ai)
+- Node.js 18+ or Docker installed on that machine
+- A Tailscale API key and a GitHub personal access token
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+<Steps>
 
-### Step 2: Deploy your changes
+<Step title="Clone the repository">
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+```bash
+git clone --branch v0.1.0 https://github.com/thezem/reacher.git
+cd reacher
+```
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+</Step>
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+<Step title="Copy and configure your environment files">
 
-### Step 3: Go live
+Copy both config files from their examples:
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+```bash
+cp .env.example .env
+cp reacher.config.example.yaml reacher.config.yaml
+```
+
+Open `.env` and fill in your credentials. Every required variable is listed below.
+
+**Required environment variables**
+
+| Variable | Required | Description |
+| --- | --- | --- |
+| `MCP_SECRET` | Yes | Shared secret that Claude.ai sends with every request. Generate with `openssl rand -hex 32`. |
+| `TAILSCALE_API_KEY` | Yes | API key for querying your Tailscale network. Needs "Devices (read)" scope. Get one at [tailscale.com/admin/settings/keys](https://login.tailscale.com/admin/settings/keys). |
+| `GITHUB_TOKEN` | Yes | Personal access token for GitHub API calls and `gist_kb` read/write. Needs `gist` scope. Create at [github.com/settings/tokens](https://github.com/settings/tokens). |
+| `PROXY_ALLOWED_DOMAINS` | Yes | Comma-separated list of domains `fetch_external` is allowed to call (e.g. `api.github.com,api.linear.app`). |
+| `PORT` | No | HTTP port to listen on. Defaults to `3000`. |
+| `DRY_RUN` | No | Set to `true` to have `ssh_exec` log commands without executing them. Defaults to `false`. |
+| `AUDIT_ENABLED` | No | Enable audit logging. Defaults to `true`. |
+| `AUDIT_LOG_PATH` | No | Path to the audit log file. Defaults to `./reacher-audit.log`. |
+| `SSH_BLOCKED_COMMANDS` | No | Comma-separated list of commands to block from `ssh_exec` (e.g. `rm -rf /,shutdown,reboot`). |
+| `SSH_ALLOWED_DIRS` | No | Comma-separated list of directories SSH operations are restricted to. Empty means no restriction. |
+| `FETCH_EXTERNAL_TOKEN_MAP` | No | JSON mapping of domain → env var name for automatic token injection (e.g. `{"api.github.com":"GITHUB_TOKEN"}`). |
+| `BROWSER_CDP_HOST` | No | Host of the CDP-compatible browser. Defaults to `127.0.0.1`. |
+| `BROWSER_CDP_PORT` | No | Port of the CDP-compatible browser. Defaults to `9222`. |
+
+<Note>
+`MCP_SECRET`, `TAILSCALE_API_KEY`, and `GITHUB_TOKEN` are validated at startup. The server will refuse to start if any of these are missing.
+</Note>
+
+**Optional: edit `reacher.config.yaml`**
+
+The YAML config controls safety settings. The defaults are reasonable, but you can tighten them:
+
+```yaml
+ssh:
+  blocked_commands:
+    - "rm -rf"
+    - "dd"
+    - ":(){ :|:& };:"  # fork bomb
+  allowed_dirs: []     # empty = no directory restriction
+
+audit:
+  enabled: true
+  log_path: "./reacher-audit.log"
+
+dry_run: false
+```
+
+Environment variables always take precedence over YAML config values.
+
+</Step>
+
+<Step title="Enable Tailscale SSH on target devices">
+
+For `ssh_exec` to reach a machine, Tailscale SSH must be enabled on it. Run this on each device you want Reacher to control:
+
+```bash
+sudo tailscale up --ssh
+```
+
+Then verify SSH access works from your server:
+
+```bash
+ssh user@device-hostname
+```
+
+If that succeeds manually, Reacher will be able to reach it too.
+
+<Tip>
+You can skip this step initially and come back to it. The `tailscale_status` tool works without SSH being enabled, and you can enable SSH per device as you need it.
+</Tip>
+
+</Step>
+
+<Step title="Start the server">
+
+Choose your runtime:
+
+<CodeGroup>
+
+```bash Docker (recommended)
+docker compose up -d
+```
+
+```bash Bare Node
+npm install
+node index.js
+```
+
+</CodeGroup>
+
+Check the server started correctly:
+
+<CodeGroup>
+
+```bash Docker
+docker compose logs -f reacher
+```
+
+```bash Bare Node
+# The server prints a startup message:
+# ✅ MCP Server started on http://localhost:3000
+#    POST http://localhost:3000/mcp
+#    GET  http://localhost:3000/health
+```
+
+</CodeGroup>
+
+<Warning>
+If startup fails with "Missing required environment variables", check that `MCP_SECRET`, `TAILSCALE_API_KEY`, and `GITHUB_TOKEN` are all set in your `.env` file.
+</Warning>
+
+</Step>
+
+<Step title="Verify the server is responding">
+
+Run a `tools/list` request against the local server to confirm everything is working:
+
+```bash
+curl -X POST "http://localhost:3000/mcp?token=YOUR_MCP_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc": "2.0", "method": "tools/list", "id": 1}'
+```
+
+Replace `YOUR_MCP_SECRET` with the value you set in `.env`. You should get back a JSON response listing all six tools: `ssh_exec`, `tailscale_status`, `fetch_external`, `github_search`, `gist_kb`, and `browser`.
+
+You can also hit the unauthenticated health endpoint:
+
+```bash
+curl http://localhost:3000/health
+```
+
+Expected response:
+
+```json
+{ "status": "ok", "timestamp": "...", "dry_run": false }
+```
+
+</Step>
+
+<Step title="Expose the server over HTTPS">
+
+Claude.ai requires a public HTTPS URL to connect to your server. If you're running on a VPS, set up a reverse proxy in front of port 3000.
+
+<CodeGroup>
+
+```text Caddy
+# /etc/caddy/Caddyfile
+mcp.yourdomain.com {
+  reverse_proxy localhost:3000
+}
+```
+
+```nginx Nginx
+# /etc/nginx/sites-available/reacher
+server {
+    listen 80;
+    server_name mcp.yourdomain.com;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+</CodeGroup>
+
+<Note>
+Caddy handles HTTPS certificate provisioning automatically via Let's Encrypt. With Nginx, you'll need to run Certbot separately to obtain and renew a certificate.
+</Note>
+
+After setting up the proxy, confirm it's reachable from the public internet:
+
+```bash
+curl -X POST "https://mcp.yourdomain.com/mcp?token=YOUR_MCP_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc": "2.0", "method": "tools/list", "id": 1}'
+```
+
+</Step>
+
+<Step title="Connect to Claude.ai">
+
+1. Go to **Claude.ai** > **Settings** > **Integrations**
+2. Click **Add custom connector**
+3. Paste your server URL: `https://mcp.yourdomain.com/mcp?token=YOUR_MCP_SECRET`
+4. Save and start a new conversation
+
+Try asking: *"What devices are on my Tailscale network?"* — Claude should call `tailscale_status` and list your devices.
+
+See [Connecting to Claude](/connecting-to-claude) for full instructions and troubleshooting.
+
+</Step>
+
+</Steps>
+
+---
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
-
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Connect to Claude" icon="plug" href="/connecting-to-claude">
+    Step-by-step instructions for adding the connector in Claude.ai settings.
+  </Card>
+  <Card title="Tools reference" icon="wrench" href="/tools/overview">
+    Learn what each tool does and how to use it effectively.
+  </Card>
+  <Card title="Configuration" icon="sliders" href="/configuration/environment-variables">
+    Full reference for all environment variables and YAML config options.
+  </Card>
+  <Card title="Safety settings" icon="shield" href="/operations/safety">
+    Configure blocked commands, directory restrictions, and audit logging.
+  </Card>
 </CardGroup>
-
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>
