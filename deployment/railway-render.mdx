@@ -137,7 +137,7 @@ Railway and Render are managed platforms that deploy directly from a GitHub repo
 
 ## Health check path
 
-For both platforms, set the health check path to `/health`. This endpoint requires no authentication and returns `{"status":"ok"}` when the server is running correctly.
+For both platforms, set the health check path to `/health`. Note that this endpoint requires the `MCP_SECRET` token as a query parameter (`?token=YOUR_SECRET`) — configure your platform's health check accordingly, or use a platform-level TCP check on port 3000 instead.
 
 ## Environment variable reference
 

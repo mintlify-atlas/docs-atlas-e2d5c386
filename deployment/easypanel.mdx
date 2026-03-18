@@ -47,7 +47,7 @@ EasyPanel is a server management panel that connects directly to your GitHub rep
   </Step>
 
   <Step title="Set the health check path">
-    In the service settings, set the **Health Check Path** to `/health`. EasyPanel will poll this endpoint to determine whether the deployment succeeded and the service is healthy.
+    In the service settings, you can set a **Health Check Path**. Because the `/health` endpoint requires the `MCP_SECRET` token as a query parameter, the easiest approach is to skip the HTTP health check and rely on EasyPanel's container restart policy instead.
   </Step>
 
   <Step title="Deploy">

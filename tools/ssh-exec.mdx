@@ -22,7 +22,7 @@ Tailscale SSH must be explicitly enabled on each target device before this tool 
 </ParamField>
 
 <ParamField path="user" type="string">
-  SSH user to connect as. Defaults to `hazem`. Override this when connecting to devices with a different default user.
+  SSH user to connect as. The schema default is `hazem` (the project author's username — you will almost certainly need to override this). Always specify the correct user for your target device, e.g. `ubuntu`, `root`, or your own username.
 </ParamField>
 
 <ParamField path="shell" type="string">

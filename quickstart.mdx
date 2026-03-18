@@ -153,10 +153,10 @@ curl -X POST "http://localhost:3000/mcp?token=YOUR_MCP_SECRET" \
 
 Replace `YOUR_MCP_SECRET` with the value you set in `.env`. You should get back a JSON response listing all six tools: `ssh_exec`, `tailscale_status`, `fetch_external`, `github_search`, `gist_kb`, and `browser`.
 
-You can also hit the unauthenticated health endpoint:
+You can also check the health endpoint (requires the same token):
 
 ```bash
-curl http://localhost:3000/health
+curl "http://localhost:3000/health?token=YOUR_MCP_SECRET"
 ```
 
 Expected response:

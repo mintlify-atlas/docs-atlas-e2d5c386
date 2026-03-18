@@ -54,7 +54,7 @@ Docker Compose is the simplest path for most deployments. It builds the image, m
   <Step title="Verify it is running">
     ```bash
     docker logs mcp-server
-    curl http://localhost:3000/health
+    curl "http://localhost:3000/health?token=YOUR_MCP_SECRET"
     ```
 
     You should see `{"status":"ok",...}` from the health check endpoint.
@@ -79,6 +79,7 @@ services:
     environment:
       PORT: ${PORT:-3000}
       TAILSCALE_API_KEY: ${TAILSCALE_API_KEY}
+      # TELEGRAM_BOT_TOKEN and DEFAULT_CHAT_ID are unused leftover vars in the compose file
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       DEFAULT_CHAT_ID: ${DEFAULT_CHAT_ID}
     env_file:
@@ -142,10 +143,10 @@ docker compose logs -f mcp-server
 
 ## Health check
 
-The `/health` endpoint requires no authentication and returns the current server status:
+The `/health` endpoint returns the current server status. It requires the same token as the `/mcp` endpoint:
 
 ```bash
-curl http://localhost:3000/health
+curl "http://localhost:3000/health?token=YOUR_MCP_SECRET"
 ```
 
 ```json
@@ -228,4 +229,4 @@ Key details:
 - **Base image**: `node:22-alpine` — small Alpine-based Node 22 image
 - **`openssh-client`**: required for the `ssh_exec` tool to reach Tailscale devices
 - **`npm install --omit=dev`**: installs only production dependencies to keep the image lean
-- **Built-in health check**: polls the `/health` endpoint every 30 seconds
+- **Built-in health check**: polls the server's HTTP port every 30 seconds

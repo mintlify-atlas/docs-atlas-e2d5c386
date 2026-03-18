@@ -61,7 +61,7 @@ Running Reacher directly with Node.js is the lightest-weight option and works we
 
   <Step title="Verify it is running">
     ```bash
-    curl http://localhost:3000/health
+    curl "http://localhost:3000/health?token=YOUR_MCP_SECRET"
     ```
 
     Expected response: `{"status":"ok",...}`
@@ -139,7 +139,7 @@ pm2 delete reacher          # stop and remove from PM2
 ## Health check
 
 ```bash
-curl http://localhost:3000/health
+curl "http://localhost:3000/health?token=YOUR_MCP_SECRET"
 ```
 
 ```json

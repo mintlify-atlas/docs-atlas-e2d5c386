@@ -96,7 +96,7 @@ After this runs once, every new session can pick up where the last one left off.
 
 **Claude.ai shows "connection failed" when adding the connector**
 
-- Confirm the server is publicly reachable: `curl https://yourdomain.com/health`
+- Confirm the server is publicly reachable: `curl "https://yourdomain.com/health?token=YOUR_MCP_SECRET"`
 - Check that your reverse proxy is forwarding to port 3000 (or whatever `PORT` you set)
 - Verify your SSL certificate is valid and not expired
 - Make sure port 443 is open in your VPS firewall

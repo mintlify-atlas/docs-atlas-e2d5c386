@@ -17,7 +17,7 @@ Claude requires a public HTTPS URL to reach your Reacher server.
 
 1. Confirm the server is running and reachable:
    ```bash
-   curl https://mcp.yourdomain.com/health
+   curl "https://mcp.yourdomain.com/health?token=YOUR_MCP_SECRET"
    ```
    You should get `{"status":"ok",...}`. If this fails, the problem is network/DNS, not Reacher.
 
@@ -60,7 +60,7 @@ docker logs reacher
 
 Common causes:
 
-- **Missing required env vars** — `MCP_SECRET`, `TAILSCALE_API_KEY`, `GITHUB_TOKEN`, and `PROXY_ALLOWED_DOMAINS` must all be set. A missing variable causes startup to fail.
+- **Missing required env vars** — `MCP_SECRET`, `TAILSCALE_API_KEY`, and `GITHUB_TOKEN` must all be set. A missing variable causes startup to fail with an explicit error message listing the missing keys.
 - **Port already in use** — another process is bound to port `3000`. Change `PORT` in `.env` or stop the other process.
 - **Malformed `.env`** — quotes around values can cause parsing issues. Values in `.env` do not need quotes.
 
